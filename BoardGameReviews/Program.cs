@@ -1,7 +1,26 @@
+using BoardGameReviews.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+
+
+var categories = SampleData.Categories;
+var gameTypes = SampleData.GameTypes;
+var publishers = SampleData.Publishers;
+var games = SampleData.Games;
+var users = SampleData.Users;
+var reviews = SampleData.Reviews;
+var events = SampleData.Events;
+
+
+builder.Services.AddSingleton(categories);
+builder.Services.AddSingleton(gameTypes);
+builder.Services.AddSingleton(publishers);
+builder.Services.AddSingleton(games);
+builder.Services.AddSingleton(users);
+builder.Services.AddSingleton(reviews);
+builder.Services.AddSingleton(events);
 
 var app = builder.Build();
 

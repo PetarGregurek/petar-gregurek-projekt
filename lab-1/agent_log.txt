@@ -1,0 +1,398 @@
+
+═══════════════════════════════════════════════════════════════════════════════
+                    BOARD GAME REVIEWS - CLASS DOCUMENTATION LOG
+                              ASP.NET MVC 8.0 Project
+═══════════════════════════════════════════════════════════════════════════════
+
+PROJECT OVERVIEW
+────────────────────────────────────────────────────────────────────────────────
+Application: Board Game Reviews System
+Purpose: A web application for managing and reviewing board games
+Technology Stack: ASP.NET Core MVC 8.0
+Architecture: MVC pattern with Entity models
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              CLASS STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ENUM: Difficulty
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/GameDifficulty.cs
+Purpose: Represents the difficulty level of games and categories
+Values:
+  - Easy
+  - Medium
+  - Hard
+
+Usage: Used by Game and Category classes to indicate complexity level
+
+
+2. CLASS: Category
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/Category.cs
+Purpose: Represents game categories (e.g., Strategy, Adventure, Fantasy)
+
+Properties:
+  - Id (int): Primary key
+  - Name (string): Category name
+  - Description (string): Detailed explanation of the category
+  - AgeGroup (string): Recommended age group (e.g., "12+")
+  - Difficulty (Difficulty enum): Category difficulty level
+  - Popularity (int): Popularity rating/score
+  - Games (List<Game>): Navigation property - all games in this category
+
+Relationships:
+  ├─ One-to-Many with Game (one category has many games)
+
+
+3. CLASS: GameType
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/GameType.cs
+Purpose: Classifies games by type (Board Game, Card Game, Dice Game, etc.)
+
+Properties:
+  - Id (int): Primary key
+  - Name (string): Type name
+  - Description (string): Type description
+
+Relationships:
+  ├─ One-to-Many with Game (one game type has many games)
+
+
+4. CLASS: Publisher
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/Publisher.cs
+Purpose: Represents game publishers/companies
+
+Properties:
+  - Id (int): Primary key
+  - Name (string): Publisher company name
+  - Country (string): Country of origin
+  - Games (List<Game>): Navigation property - all games published
+
+Relationships:
+  ├─ One-to-Many with Game (one publisher produces many games)
+
+
+5. CLASS: Game (Core Entity)
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/Game.cs
+Purpose: Central entity representing a board game
+
+Properties:
+  - Id (int): Primary key
+  - Name (string): Game title
+  - Description (string): Game overview/rules summary
+  - YearPublished (int): Release year
+  - MinPlayers (int): Minimum player count
+  - MaxPlayers (int): Maximum player count
+  - Difficulty (Difficulty enum): Game complexity level
+  
+Foreign Keys & Navigation:
+  - GameTypeId (int): Foreign key to GameType
+  - GameType (GameType): Navigation property
+  - PublisherId (int): Foreign key to Publisher
+  - Publisher (Publisher): Navigation property
+  - CategoryId (int): Foreign key to Category
+  - Category (Category): Navigation property
+  - Reviews (List<Review>): Navigation property - all reviews of this game
+
+Relationships:
+  ├─ Many-to-One with GameType
+  ├─ Many-to-One with Publisher
+  ├─ Many-to-One with Category
+  └─ One-to-Many with Review (one game has many reviews)
+
+
+6. CLASS: User
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/User.cs
+Purpose: Represents application users who can write reviews
+
+Properties:
+  - Id (int): Primary key
+  - Username (string): User login name
+  - Email (string): User email address
+  - HashedPassword (string): Encrypted password for security
+  - Country (string): User's country
+  - Age (int): User's age
+  - Reviews (List<Review>): Navigation property - all reviews by user
+
+Relationships:
+  └─ One-to-Many with Review (one user writes many reviews)
+
+
+7. CLASS: Review
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/Review.cs
+Purpose: Represents user reviews and ratings for games
+
+Properties:
+  - Id (int): Primary key
+  - Rating (int): Numerical rating (0-5 scale implied)
+  - Title (string): Review headline/title
+  - Comment (string): Detailed review text
+  - IsRecommended (bool): Whether user recommends the game
+  - CreatedAt (DateTime): When review was posted
+
+Foreign Keys & Navigation:
+  - GameId (int): Foreign key to Game
+  - Game (Game): Navigation property - the reviewed game
+  - UserId (int): Foreign key to User
+  - User (User): Navigation property - review author
+
+Relationships:
+  ├─ Many-to-One with Game
+  └─ Many-to-One with User
+
+
+8. CLASS: Event
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/Event.cs
+Purpose: Represents gaming events and tournaments
+
+Properties:
+  - Id (int): Primary key
+  - Name (string): Event name/title
+  - StartDateTime (DateTime): Event start date and time
+  - EndDateTime (DateTime): Event end date and time
+  - Location (string): Physical venue/location
+
+Foreign Keys & Navigation:
+  - GameId (int): Foreign key to Game
+  - Game (Game): Navigation property - game being played at event
+
+Relationships:
+  └─ Many-to-One with Game (many events can feature the same game)
+
+
+9. CLASS: SampleData (Static Utility Class)
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/SampleData.cs
+Purpose: Provides seed data for development and testing
+
+Sample Collections:
+  ├─ Categories (3 entries): Strategy, Adventure, Fantasy
+  ├─ GameTypes (3 entries): Board Game, Card Game, Dice Game
+  ├─ Publishers (3 entries): Catan Studio, Asmodee, Games Workshop
+  ├─ Games (3 entries): Catan, Magic: The Gathering, Warhammer 40K
+  ├─ Users (3 entries): BoardGameMaster, StrategyKing, CasualGamer
+  ├─ Reviews (3 entries): Reviews for each sample game
+  └─ Events (3 entries): Tournament and gaming events
+
+Usage: Used to initialize/populate database during development
+
+
+10. CLASS: ErrorViewModel
+────────────────────────────────────────────────────────────────────────────────
+Location: Models/ErrorViewModel.cs
+Purpose: Standard MVC error page model
+Usage: Passed to Error.cshtml view for exception/error display
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                            CLASS RELATIONSHIPS MAP
+═══════════════════════════════════════════════════════════════════════════════
+
+                          ┌─────────────────┐
+                          │   User          │
+                          │  (Reviewer)     │
+                          └────────┬────────┘
+                                   │
+                          (writes) │ (1:M)
+                                   │
+                          ┌────────▼────────┐
+                          │    Review       │
+                          │  (Rating/Text)  │
+                          └────────┬────────┘
+                                   │
+                          (reviews)│ (M:1)
+                                   │
+         ┌─────────────────────────┼─────────────────────────┐
+         │                         │                         │
+    (M:1)│ belongs to         (M:1)│ published by       (M:1)│ is type
+         │                         │                         │
+    ┌────▼──────────┐         ┌───▼──────────┐         ┌───▼──────────┐
+    │   Category    │         │  Publisher   │         │   GameType   │
+    │   (Genre)     │         │(Company)     │         │  (Board/Card)│
+    └────▲──────────┘         └──────────────┘         └──────────────┘
+         │
+         │ (1:M)
+         │ contains
+         │
+    ┌────┴──────────┐
+    │     Game      │
+    │  (Main Entity)│
+    └────┬──────────┘
+         │
+         │ (1:M)
+         │ featured in
+         │
+    ┌────▼──────────┐
+    │    Event      │
+    │ (Tournament)  │
+    └───────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                        CLASS DESIGN DECISIONS & HOOKS
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ DESIGN DECISION 1: Enum for Difficulty
+  - Used enum for Difficulty instead of separate lookup table
+  - Pro: Simpler code, predefined values, type-safe
+  - Used globally in both Game and Category for consistency
+
+✓ DESIGN DECISION 2: User Authentication Fields
+  - Included HashedPassword instead of plain password
+  - Includes email for password recovery/notifications
+  - Foundation for future authentication system
+
+✓ DESIGN DECISION 3: Review Metadata
+  - CreatedAt timestamp to track when reviews were posted
+  - IsRecommended boolean for quick filtering
+  - Supports rating system (1-5 implied)
+
+✓ DESIGN DECISION 4: Event System
+  - Separate Event class for organizing gaming tournaments
+  - DateTime fields for scheduling
+  - Location field for physical venues
+
+✓ DESIGN DECISION 5: Navigation Properties
+  - Included full List<T> collections for easy querying
+  - Enables LINQ navigation in controllers
+  - Foreign key relationships properly set up
+
+✓ DESIGN DECISION 6: Sample Data Seeding
+  - Static SampleData class for rapid development
+  - Contains 3 entries of each entity type
+  - Allows testing features without manual data entry
+
+✓ DESIGN DECISION 7: Player Count Constraints
+  - MinPlayers and MaxPlayers for game rules
+  - Allows event planning and matchmaking
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                            KEY RELATIONSHIPS
+═══════════════════════════════════════════════════════════════════════════════
+
+PRIMARY KEY ASSOCIATIONS:
+  Game ──(Many-to-One)──> Publisher        (PublisherId)
+  Game ──(Many-to-One)──> GameType         (GameTypeId)
+  Game ──(Many-to-One)──> Category         (CategoryId)
+  Review ─(Many-to-One)─> User             (UserId)
+  Review ─(Many-to-One)─> Game             (GameId)
+  Event ──(Many-to-One)─> Game             (GameId)
+
+NAVIGATIONAL COLLECTIONS:
+  Publisher ──(1:M)──> Game       [via Games collection]
+  GameType ───(1:M)──> Game       [via Games in Game nav property expected]
+  Category ───(1:M)──> Game       [via Games collection]
+  User ───────(1:M)──> Review     [via Reviews collection]
+  Game ───────(1:M)──> Review     [via Reviews collection]
+  Game ───────(1:M)──> Event      [via Events in Event nav property expected]
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                          DEVELOPMENT HOOKS & NOTES
+═══════════════════════════════════════════════════════════════════════════════
+
+POTENTIAL ENHANCEMENTS:
+  ✓ Add DateTime CreatedAt/UpdatedAt to Game class for auditing
+  ✓ Add IsActive flag to User for deactivation instead of deletion
+  ✓ Add more Difficulty values if needed
+  ✓ Consider adding Average Rating property to Game class
+  ✓ Add image/thumbnail URLs to Game and Publisher
+  ✓ Add Tags/Keywords to games for better search
+  ✓ Implement soft deletes for data archival
+
+CONTROLLER REQUIREMENTS:
+  - HomeController (currently exists)
+  - GameController (for CRUD operations)
+  - ReviewController (create/edit reviews)
+  - CategoryController (manage categories)
+  - PublisherController (manage publishers)
+  - EventController (manage events)
+
+DATABASE CONTEXT REQUIREMENTS:
+  - DbContext class needed with DbSet<T> for each entity
+  - Fluent API configurations for relationships
+  - Database migrations for schema creation
+
+VALIDATION REQUIREMENTS TO ADD:
+  - Required fields validation
+  - String length constraints
+  - Age validation (18+ for some operations)
+  - Rating range validation (1-5)
+  - MinPlayers <= MaxPlayers validation
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              SAMPLE DATA DETAILS
+═══════════════════════════════════════════════════════════════════════════════
+
+CATEGORIES:
+  1. Strategy (12+, Hard difficulty, 95 popularity)
+  2. Adventure (14+, Medium difficulty, 85 popularity)
+  3. Fantasy (13+, Hard difficulty, 90 popularity)
+
+GAME TYPES:
+  1. Board Game - Traditional board game
+  2. Card Game - Game played with cards
+  3. Dice Game - Game using dice
+
+PUBLISHERS:
+  1. Catan Studio - Germany
+  2. Asmodee - France
+  3. Games Workshop - UK
+
+GAMES:
+  1. Catan (1995, 2-4 players, Medium difficulty, Strategy category)
+  2. Magic: The Gathering (1993, 2 players, Hard difficulty, Strategy category)
+  3. Warhammer 40K (1987, 2-4 players, Hard difficulty, Fantasy category)
+
+USERS:
+  1. BoardGameMaster - 28 years old, Croatia
+  2. StrategyKing - 35 years old, Serbia
+  3. CasualGamer - 23 years old, Bosnia
+
+REVIEWS:
+  1. Catan - 5 stars - "Excellent Classic Game" (Recommended)
+  2. Magic: The Gathering - 4 stars - "Complex but Rewarding" (Recommended)
+  3. Warhammer 40K - 3 stars - "Not for Everyone" (Not Recommended)
+
+EVENTS:
+  1. Catan Tournament - April 15, 2026, Zagreb
+  2. Magic Draft Night - April 18, 2026, Downtown
+  3. Warhammer 40K Campaign - April 20, 2026, Novi Sad
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ✓ Model classes created
+2. [ ] Create DbContext class for data access
+3. [ ] Configure database connection in appsettings.json
+4. [ ] Create Entity Framework migrations
+5. [ ] Develop repository pattern for data access (optional)
+6. [ ] Create API/MVC controllers for CRUD operations
+7. [ ] Build Razor Views for UI
+8. [ ] Implement business logic and validation
+9. [ ] Add authentication/authorization
+10. [ ] Create search and filter functionality
+11. [ ] Deploy to production environment
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                           CREATION TIMESTAMP
+═══════════════════════════════════════════════════════════════════════════════
+Generated: April 2, 2026
+Project: Board Game Reviews ASP.NET MVC
+Framework: .NET 8.0
+Architecture: MVC with Entity Framework Core
+Status: Models Complete, Ready for DbContext implementation
+
+═══════════════════════════════════════════════════════════════════════════════
