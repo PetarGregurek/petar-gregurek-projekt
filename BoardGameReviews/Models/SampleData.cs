@@ -49,9 +49,9 @@ namespace BoardGameReviews.Models
 
         public static List<Event> Events = new List<Event>
         {
-            new Event { Id = 1, Name = "Catan Tournament", GameId = 1, StartDateTime = new DateTime(2026, 4, 15, 18, 0, 0), EndDateTime = new DateTime(2026, 4, 15, 22, 0, 0), Location = "Board Game Cafe - Zagreb" },
-            new Event { Id = 2, Name = "Magic Draft Night", GameId = 2, StartDateTime = new DateTime(2026, 4, 18, 19, 0, 0), EndDateTime = new DateTime(2026, 4, 18, 23, 0, 0), Location = "Card Shop Downtown" },
-            new Event { Id = 3, Name = "Warhammer 40K Campaign", GameId = 3, StartDateTime = new DateTime(2026, 4, 20, 17, 0, 0), EndDateTime = new DateTime(2026, 4, 20, 21, 0, 0), Location = "Gaming Studio - Novi Sad" }
+            new Event { Id = 1, Name = "Catan Tournament", GameId = 1, StartDateTime = new DateTime(2026, 4, 5, 18, 0, 0), EndDateTime = new DateTime(2026, 4, 15, 22, 0, 0), Location = "Board Game Cafe - Zagreb" },
+            new Event { Id = 2, Name = "Magic Draft Night", GameId = 2, StartDateTime = new DateTime(2026, 4, 8, 19, 0, 0), EndDateTime = new DateTime(2026, 4, 18, 23, 0, 0), Location = "Card Shop Downtown" },
+            new Event { Id = 3, Name = "Warhammer 40K Campaign", GameId = 3, StartDateTime = new DateTime(2026, 4, 2, 17, 0, 0), EndDateTime = new DateTime(2026, 4, 20, 21, 0, 0), Location = "Gaming Studio - Novi Sad" }
         };
     }
 }
