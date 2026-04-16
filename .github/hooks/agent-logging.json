@@ -1,0 +1,39 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .github/hooks/log-event.ps1",
+        "timeout": 15
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .github/hooks/log-event.ps1",
+        "timeout": 15
+      }
+    ],
+    "SubagentStart": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .github/hooks/log-event.ps1",
+        "timeout": 15
+      }
+    ],
+    "SubagentStop": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .github/hooks/log-event.ps1",
+        "timeout": 15
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .github/hooks/log-event.ps1",
+        "timeout": 15
+      }
+    ]
+  }
+}
