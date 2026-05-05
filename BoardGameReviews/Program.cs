@@ -31,6 +31,46 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "games-list",
+    pattern: "games",
+    defaults: new { controller = "Game", action = "Index" });
+
+app.MapControllerRoute(
+    name: "game-details",
+    pattern: "games/{id:int}",
+    defaults: new { controller = "Game", action = "Details", entity = "game" });
+
+app.MapControllerRoute(
+    name: "category-details",
+    pattern: "categories/{id:int}",
+    defaults: new { controller = "Game", action = "Details", entity = "category" });
+
+app.MapControllerRoute(
+    name: "publisher-details",
+    pattern: "publishers/{id:int}",
+    defaults: new { controller = "Game", action = "Details", entity = "publisher" });
+
+app.MapControllerRoute(
+    name: "user-details",
+    pattern: "users/{id:int}",
+    defaults: new { controller = "Game", action = "Details", entity = "user" });
+
+app.MapControllerRoute(
+    name: "event-details",
+    pattern: "events/{id:int}",
+    defaults: new { controller = "Game", action = "Details", entity = "event" });
+
+app.MapControllerRoute(
+    name: "review-details",
+    pattern: "reviews/{id:int}",
+    defaults: new { controller = "Game", action = "Details", entity = "review" });
+
+app.MapControllerRoute(
+    name: "privacy-page",
+    pattern: "privacy",
+    defaults: new { controller = "Home", action = "Privacy" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
