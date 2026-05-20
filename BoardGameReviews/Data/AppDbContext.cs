@@ -61,6 +61,17 @@ namespace BoardGameReviews.Data
                 .HasForeignKey(g => g.GameTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Global filter for soft-deleted games
+            modelBuilder.Entity<Game>()
+                .HasQueryFilter(g => g.DeletedAt == null);
+
+            // Hide dependents when parent game is soft-deleted
+            modelBuilder.Entity<Review>()
+                .HasQueryFilter(r => r.Game != null && r.Game.DeletedAt == null);
+
+            modelBuilder.Entity<Event>()
+                .HasQueryFilter(e => e.Game != null && e.Game.DeletedAt == null);
+
             // ── Seed data ────────────────────────────────────────────────────
 
             modelBuilder.Entity<Category>().HasData(

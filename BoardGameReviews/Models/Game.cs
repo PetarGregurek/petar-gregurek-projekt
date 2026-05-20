@@ -27,6 +27,8 @@ namespace BoardGameReviews.Models
 
         public Difficulty Difficulty { get; set; }
 
+        public DateTime? DeletedAt { get; set; }
+
         public int GameTypeId { get; set; }
 
         [ForeignKey(nameof(GameTypeId))]

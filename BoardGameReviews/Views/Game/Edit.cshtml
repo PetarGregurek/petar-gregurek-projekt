@@ -1,0 +1,30 @@
+@model BoardGameReviews.Models.GameFormViewModel
+
+@{
+    ViewData["Title"] = "Edit Game";
+}
+
+<section class="game-page game-form-page">
+    <div class="game-hero mb-4 d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+            <p class="eyebrow mb-2">Edit Game</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Game" asp-action="Index" class="btn game-btn-outline">Back to List</a>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="card-header">Game Editing</div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input asp-for="Input.Id" type="hidden" />
+                @await Html.PartialAsync("_GameForm", Model)
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

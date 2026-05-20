@@ -8,19 +8,28 @@
     <div class="game-hero mb-4">
         <p class="eyebrow mb-2">BoardGameReviews</p>
         <h1 class="mb-2">Games</h1>
-        <div class="entity-nav d-flex flex-wrap gap-2">
-            <a class="btn btn-sm game-btn-outline" href="#games">Games (@Model.Games.Count)</a>
-            <a class="btn btn-sm game-btn-outline" asp-controller="Category" asp-action="Index">Categories</a>
-            <a class="btn btn-sm game-btn-outline" asp-controller="GameType" asp-action="Index">Game Types</a>
-            <a class="btn btn-sm game-btn-outline" asp-controller="Publisher" asp-action="Index">Publishers</a>
-            <a class="btn btn-sm game-btn-outline" asp-controller="User" asp-action="Index">Users</a>
-            <a class="btn btn-sm game-btn-outline" asp-controller="Review" asp-action="Index">Reviews</a>
-            <a class="btn btn-sm game-btn-outline" asp-controller="Event" asp-action="Index">Events</a>
-        </div>
+        @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+        {
+            <div class="status-banner mb-3">@Model.StatusMessage</div>
+        }
     </div>
 
     <div id="games" class="entity-block game-table-wrap mb-4">
         <div class="entity-header">Games</div>
+        <div class="list-toolbar">
+            <div class="list-toolbar__search">
+                <label class="form-label" for="game-search">Search</label>
+                <input id="game-search"
+                       class="form-control list-search-input"
+                       type="search"
+                       placeholder="Search by name, description, type, publisher, or category"
+                       value="@Model.Search"
+                       data-ajax-search
+                       data-search-url="@Url.Action("Index", "Game")"
+                       data-search-target="#games-table-body" />
+            </div>
+            <a class="btn game-btn-primary list-toolbar__action" asp-controller="Game" asp-action="Create">New Game</a>
+        </div>
         <div class="table-responsive">
             <table class="table game-table align-middle mb-0">
                 <thead>
@@ -38,35 +47,8 @@
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var item in Model.Games)
-                    {
-                        var difficultyClass = item.Game.Difficulty switch
-                        {
-                            Difficulty.Easy => "difficulty-easy",
-                            Difficulty.Medium => "difficulty-medium",
-                            _ => "difficulty-hard"
-                        };
-
-                        <tr>
-                            <td>
-                                <div class="fw-semibold">@item.Game.Name</div>
-                                <div class="small text-secondary">@item.Game.Description</div>
-                            </td>
-                            <td>@item.Game.YearPublished</td>
-                            <td>@item.Game.MinPlayers - @item.Game.MaxPlayers</td>
-                            <td><span class="difficulty-pill @difficultyClass">@item.Game.Difficulty</span></td>
-                            <td>@item.GameTypeName</td>
-                            <td>@item.PublisherName</td>
-                            <td>@item.CategoryName</td>
-                            <td>@item.ReviewCount</td>
-                            <td>@(item.AverageRating?.ToString("0.0") ?? "N/A")</td>
-                            <td>@item.EventCount</td>
-                            <td>
-                                <a asp-controller="Game" asp-action="Details" asp-route-id="@item.Game.Id" class="btn btn-sm game-btn-primary">Detalji</a>
-                            </td>
-                        </tr>
-                    }
+                <tbody id="games-table-body">
+                    @await Html.PartialAsync("_GameTableRows", Model)
                 </tbody>
             </table>
         </div>

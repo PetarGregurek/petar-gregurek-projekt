@@ -157,6 +157,9 @@ namespace BoardGameReviews.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -396,28 +399,6 @@ namespace BoardGameReviews.Migrations
                         });
                 });
 
-            modelBuilder.Entity("BoardGameReviews.Models.Tag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Tags");
-                });
-
             modelBuilder.Entity("BoardGameReviews.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -482,21 +463,6 @@ namespace BoardGameReviews.Migrations
                         });
                 });
 
-            modelBuilder.Entity("GameTag", b =>
-                {
-                    b.Property<int>("GamesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TagsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("GamesId", "TagsId");
-
-                    b.HasIndex("TagsId");
-
-                    b.ToTable("GameTag");
-                });
-
             modelBuilder.Entity("BoardGameReviews.Models.Event", b =>
                 {
                     b.HasOne("BoardGameReviews.Models.Game", "Game")
@@ -552,21 +518,6 @@ namespace BoardGameReviews.Migrations
                     b.Navigation("Game");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("GameTag", b =>
-                {
-                    b.HasOne("BoardGameReviews.Models.Game", null)
-                        .WithMany()
-                        .HasForeignKey("GamesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BoardGameReviews.Models.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("BoardGameReviews.Models.Category", b =>

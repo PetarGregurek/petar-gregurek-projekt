@@ -1,0 +1,27 @@
+@model BoardGameReviews.Models.UserIndexViewModel
+
+@if (Model.Users.Count == 0)
+{
+    <tr>
+        <td colspan="5" class="text-secondary">No results found for the current query.</td>
+    </tr>
+}
+else
+{
+    @foreach (var user in Model.Users)
+    {
+        <tr>
+            <td><div class="fw-semibold">@user.Username</div></td>
+            <td>@user.Email</td>
+            <td>@user.Country</td>
+            <td>@user.Age</td>
+            <td>
+                <div class="table-actions">
+                    <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm game-btn-primary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm game-btn-outline">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-sm game-btn-danger">Delete</a>
+                </div>
+            </td>
+        </tr>
+    }
+}

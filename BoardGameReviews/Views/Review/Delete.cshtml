@@ -1,0 +1,29 @@
+@model BoardGameReviews.Models.ReviewDeleteViewModel
+
+@{
+    ViewData["Title"] = "Delete Review";
+}
+
+<section class="game-page game-delete-page">
+    <div class="game-hero mb-4 d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+            <p class="eyebrow mb-2">Delete Review</p>
+        </div>
+        <a asp-action="Index" class="btn game-btn-outline">Back to List</a>
+    </div>
+
+    <div class="game-card">
+        <div class="card-header">Delete Confirmation</div>
+        <div class="card-body">
+            <p><strong>@Model.Review.Title</strong></p>
+            <p>Game: @Model.GameName</p>
+            <p>User: @Model.Username</p>
+            <p class="mb-4">Rating: @Model.Review.Rating / 5</p>
+
+            <form asp-action="Delete" method="post">
+                <input type="hidden" name="id" value="@Model.Review.Id" />
+                <button type="submit" class="btn game-btn-danger">Confirm Delete</button>
+            </form>
+        </div>
+    </div>
+</section>

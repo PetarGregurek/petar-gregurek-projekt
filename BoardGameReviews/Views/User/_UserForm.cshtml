@@ -1,0 +1,44 @@
+@model BoardGameReviews.Models.UserFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<div class="game-form-grid">
+    <div>
+        <label asp-for="Input.Username" class="form-label"></label>
+        <input asp-for="Input.Username" class="form-control" />
+        <span asp-validation-for="Input.Username" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Email" class="form-label"></label>
+        <input asp-for="Input.Email" class="form-control" type="email" />
+        <span asp-validation-for="Input.Email" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Password" class="form-label"></label>
+        <input asp-for="Input.Password" class="form-control" type="password" autocomplete="new-password" />
+        @if (Model.IsEdit)
+        {
+            <small class="text-secondary">Leave blank to keep current password.</small>
+        }
+        <span asp-validation-for="Input.Password" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Country" class="form-label"></label>
+        <select asp-for="Input.Country" asp-items="Model.CountryOptions" class="form-control"></select>
+        <span asp-validation-for="Input.Country" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Age" class="form-label"></label>
+        <input asp-for="Input.Age" class="form-control" />
+        <span asp-validation-for="Input.Age" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="game-form-actions">
+    <button type="submit" class="btn game-btn-primary">@(Model.IsEdit ? "Save Changes" : "Create User")</button>
+    <a asp-action="Index" class="btn game-btn-outline">Back to List</a>
+</div>

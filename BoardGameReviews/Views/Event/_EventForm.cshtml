@@ -1,0 +1,49 @@
+@model BoardGameReviews.Models.EventFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<div class="game-form-grid">
+    <div>
+        <label asp-for="Input.Name" class="form-label"></label>
+        <input asp-for="Input.Name" class="form-control" />
+        <span asp-validation-for="Input.Name" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Location" class="form-label"></label>
+        <input asp-for="Input.Location" class="form-control" />
+        <span asp-validation-for="Input.Location" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.StartDateTime" class="form-label"></label>
+        <input asp-for="Input.StartDateTime" class="form-control" type="datetime-local" />
+        <span asp-validation-for="Input.StartDateTime" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.EndDateTime" class="form-label"></label>
+        <input asp-for="Input.EndDateTime" class="form-control" type="datetime-local" />
+        <span asp-validation-for="Input.EndDateTime" class="text-danger"></span>
+    </div>
+
+    <div>
+        @await Html.PartialAsync("_AutocompleteDropdown", new BoardGameReviews.Models.AutocompleteDropdownViewModel
+        {
+            InputName = "Input.GameId",
+            InputId = "Input_GameId",
+            Label = "Game",
+            LookupUrl = Url.Action("Lookup", "Event") ?? string.Empty,
+            Placeholder = "Search game",
+            SelectedId = Model.Input.GameId,
+            SelectedLabel = Model.GameDisplayName,
+            RequiredValidationMessage = "Select a game.",
+            ValidationMessage = ViewData.ModelState["Input.GameId"]?.Errors.FirstOrDefault()?.ErrorMessage
+        })
+    </div>
+</div>
+
+<div class="game-form-actions">
+    <button type="submit" class="btn game-btn-primary">@(Model.IsEdit ? "Save Changes" : "Create Event")</button>
+    <a asp-action="Index" class="btn game-btn-outline">Back to List</a>
+</div>

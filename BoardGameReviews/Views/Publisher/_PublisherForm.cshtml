@@ -1,0 +1,22 @@
+@model BoardGameReviews.Models.PublisherFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<div class="game-form-grid">
+    <div>
+        <label asp-for="Input.Name" class="form-label"></label>
+        <input asp-for="Input.Name" class="form-control" />
+        <span asp-validation-for="Input.Name" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Country" class="form-label"></label>
+        <select asp-for="Input.Country" asp-items="Model.CountryOptions" class="form-control"></select>
+        <span asp-validation-for="Input.Country" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="game-form-actions">
+    <button type="submit" class="btn game-btn-primary">@(Model.IsEdit ? "Save Changes" : "Create Publisher")</button>
+    <a asp-action="Index" class="btn game-btn-outline">Back to List</a>
+</div>

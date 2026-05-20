@@ -1,0 +1,25 @@
+@model BoardGameReviews.Models.PublisherIndexViewModel
+
+@if (Model.Publishers.Count == 0)
+{
+    <tr>
+        <td colspan="3" class="text-secondary">No results found for the current query.</td>
+    </tr>
+}
+else
+{
+    @foreach (var pub in Model.Publishers)
+    {
+        <tr>
+            <td><div class="fw-semibold">@pub.Name</div></td>
+            <td>@pub.Country</td>
+            <td>
+                <div class="table-actions">
+                    <a asp-action="Details" asp-route-id="@pub.Id" class="btn btn-sm game-btn-primary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@pub.Id" class="btn btn-sm game-btn-outline">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@pub.Id" class="btn btn-sm game-btn-danger">Delete</a>
+                </div>
+            </td>
+        </tr>
+    }
+}

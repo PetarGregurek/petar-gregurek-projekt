@@ -1,6 +1,7 @@
 using BoardGameReviews.Data;
 using BoardGameReviews.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BoardGameReviews.Controllers
 {
@@ -13,25 +14,17 @@ namespace BoardGameReviews.Controllers
             _repo = repo;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search)
         {
-            var games = await _repo.GetAllGamesAsync();
+            var games = await _repo.SearchGamesAsync(search);
 
-            var model = new GameIndexViewModel
+            var model = BuildIndexModel(games, search);
+            model.StatusMessage = TempData["StatusMessage"] as string;
+
+            if (Request.Headers.XRequestedWith == "XMLHttpRequest")
             {
-                Games = games
-                    .Select(g => new GameListItemViewModel
-                    {
-                        Game          = g,
-                        GameTypeName  = g.GameType?.Name,
-                        PublisherName = g.Publisher?.Name,
-                        CategoryName  = g.Category?.Name,
-                        ReviewCount   = g.Reviews.Count,
-                        AverageRating = g.Reviews.Count > 0 ? g.Reviews.Average(r => r.Rating) : null,
-                        EventCount    = g.Events.Count
-                    })
-                    .ToList()
-            };
+                return PartialView("_GameTableRows", model);
+            }
 
             return View(model);
         }
@@ -43,6 +36,252 @@ namespace BoardGameReviews.Controllers
 
             return View(BuildGameDetails(game));
         }
+
+        public async Task<IActionResult> Create()
+        {
+            var model = await BuildFormViewModelAsync(new GameFormInputModel());
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(GameFormViewModel model)
+        {
+            var input = model.Input;
+            await ValidateGameInputAsync(input);
+
+            if (!ModelState.IsValid)
+            {
+                return View(await BuildFormViewModelAsync(input));
+            }
+
+            var game = MapToGame(input);
+            await _repo.AddGameAsync(game);
+
+            TempData["StatusMessage"] = "Game created successfully.";
+            return RedirectToAction(nameof(Details), new { id = game.Id });
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var game = await _repo.GetGameForEditAsync(id);
+            if (game == null)
+            {
+                return NotFound();
+            }
+
+            var input = new GameFormInputModel
+            {
+                Id = game.Id,
+                Name = game.Name,
+                Description = game.Description,
+                YearPublished = game.YearPublished,
+                MinPlayers = game.MinPlayers,
+                MaxPlayers = game.MaxPlayers,
+                Difficulty = game.Difficulty,
+                GameTypeId = game.GameTypeId,
+                PublisherId = game.PublisherId,
+                CategoryId = game.CategoryId
+            };
+
+            return View(await BuildFormViewModelAsync(input));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, GameFormViewModel model)
+        {
+            var input = model.Input;
+
+            if (id != input.Id)
+            {
+                return BadRequest();
+            }
+
+            await ValidateGameInputAsync(input);
+
+            if (!ModelState.IsValid)
+            {
+                return View(await BuildFormViewModelAsync(input));
+            }
+
+            var game = await _repo.GetGameForEditAsync(id);
+            if (game == null)
+            {
+                return NotFound();
+            }
+
+            game.Name = input.Name;
+            game.Description = input.Description;
+            game.YearPublished = input.YearPublished;
+            game.MinPlayers = input.MinPlayers;
+            game.MaxPlayers = input.MaxPlayers;
+            game.Difficulty = input.Difficulty;
+            game.GameTypeId = input.GameTypeId;
+            game.PublisherId = input.PublisherId;
+            game.CategoryId = input.CategoryId;
+
+            await _repo.UpdateGameAsync(game);
+
+            TempData["StatusMessage"] = "Game updated successfully.";
+            return RedirectToAction(nameof(Details), new { id = game.Id });
+        }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            var game = await _repo.GetGameWithDetailsAsync(id);
+            if (game == null)
+            {
+                return NotFound();
+            }
+
+            var model = new GameDeleteViewModel
+            {
+                Game = game,
+                CanDelete = await _repo.CanDeleteGameAsync(id),
+                ReviewCount = game.Reviews.Count,
+                EventCount = game.Events.Count
+            };
+
+            return View(model);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var game = await _repo.GetGameWithDetailsAsync(id);
+            if (game == null)
+            {
+                return NotFound();
+            }
+
+            if (!await _repo.CanDeleteGameAsync(id))
+            {
+                ModelState.AddModelError(string.Empty, "This game cannot be deleted while related reviews exist.");
+                var blockedModel = new GameDeleteViewModel
+                {
+                    Game = game,
+                    CanDelete = false,
+                    ReviewCount = game.Reviews.Count,
+                    EventCount = game.Events.Count
+                };
+
+                return View("Delete", blockedModel);
+            }
+
+            await _repo.DeleteGameAsync(game);
+            TempData["StatusMessage"] = "Game deleted successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Lookup(string entityType, string? query)
+        {
+            var normalizedEntityType = entityType?.Trim().ToLowerInvariant();
+
+            return normalizedEntityType switch
+            {
+                "category" => Json((await _repo.SearchCategoriesAsync(query, 3)).Select(c => new LookupItemViewModel
+                {
+                    Id = c.Id,
+                    Label = c.Name,
+                    Description = c.AgeGroup
+                })),
+                "gametype" => Json((await _repo.SearchGameTypesAsync(query, 3)).Select(t => new LookupItemViewModel
+                {
+                    Id = t.Id,
+                    Label = t.Name,
+                    Description = t.Description
+                })),
+                "publisher" => Json((await _repo.SearchPublishersAsync(query, 3)).Select(p => new LookupItemViewModel
+                {
+                    Id = p.Id,
+                    Label = p.Name,
+                    Description = p.Country
+                })),
+                _ => BadRequest()
+            };
+        }
+
+        private async Task<GameFormViewModel> BuildFormViewModelAsync(GameFormInputModel input)
+        {
+            var categories = await _repo.GetAllCategoriesAsync();
+            var gameTypes = await _repo.GetAllGameTypesAsync();
+            var publishers = await _repo.GetAllPublishersAsync();
+
+            return new GameFormViewModel
+            {
+                Input = input,
+                DifficultyOptions = Enum.GetValues<Difficulty>()
+                    .Select(d => new SelectListItem(d.ToString(), d.ToString(), d == input.Difficulty))
+                    .ToList(),
+                CategoryDisplayName = categories.FirstOrDefault(c => c.Id == input.CategoryId)?.Name,
+                GameTypeDisplayName = gameTypes.FirstOrDefault(t => t.Id == input.GameTypeId)?.Name,
+                PublisherDisplayName = publishers.FirstOrDefault(p => p.Id == input.PublisherId)?.Name,
+                StatusMessage = TempData["StatusMessage"] as string
+            };
+        }
+
+        private async Task ValidateGameInputAsync(GameFormInputModel input)
+        {
+            if (input.MaxPlayers < input.MinPlayers)
+            {
+                ModelState.AddModelError("Input.MaxPlayers", "Maximum players must be greater than or equal to minimum players.");
+            }
+
+            var categories = await _repo.GetAllCategoriesAsync();
+            var gameTypes = await _repo.GetAllGameTypesAsync();
+            var publishers = await _repo.GetAllPublishersAsync();
+
+            if (!categories.Any(c => c.Id == input.CategoryId))
+            {
+                ModelState.AddModelError("Input.CategoryId", "Selected category does not exist.");
+            }
+
+            if (!gameTypes.Any(t => t.Id == input.GameTypeId))
+            {
+                ModelState.AddModelError("Input.GameTypeId", "Selected game type does not exist.");
+            }
+
+            if (!publishers.Any(p => p.Id == input.PublisherId))
+            {
+                ModelState.AddModelError("Input.PublisherId", "Selected publisher does not exist.");
+            }
+        }
+
+        private static Game MapToGame(GameFormInputModel input) =>
+            new()
+            {
+                Name = input.Name,
+                Description = input.Description,
+                YearPublished = input.YearPublished,
+                MinPlayers = input.MinPlayers,
+                MaxPlayers = input.MaxPlayers,
+                Difficulty = input.Difficulty,
+                GameTypeId = input.GameTypeId,
+                PublisherId = input.PublisherId,
+                CategoryId = input.CategoryId
+            };
+
+        private static GameIndexViewModel BuildIndexModel(List<Game> games, string? search) =>
+            new()
+            {
+                Search = search,
+                Games = games
+                    .Select(g => new GameListItemViewModel
+                    {
+                        Game = g,
+                        GameTypeName = g.GameType?.Name,
+                        PublisherName = g.Publisher?.Name,
+                        CategoryName = g.Category?.Name,
+                        ReviewCount = g.Reviews.Count,
+                        AverageRating = g.Reviews.Count > 0 ? g.Reviews.Average(r => r.Rating) : null,
+                        EventCount = g.Events.Count,
+                        CanDelete = g.Reviews.Count == 0
+                    })
+                    .ToList()
+            };
 
         private static GameDetailsViewModel BuildGameDetails(Game game)
         {

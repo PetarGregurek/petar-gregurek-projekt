@@ -1,0 +1,35 @@
+@model BoardGameReviews.Models.PublisherDeleteViewModel
+
+@{
+    ViewData["Title"] = "Delete Publisher";
+}
+
+<section class="game-page game-delete-page">
+    <div class="game-hero mb-4 d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+            <p class="eyebrow mb-2">Delete Publisher</p>
+        </div>
+        <a asp-action="Index" class="btn game-btn-outline">Back to List</a>
+    </div>
+
+    <div class="game-card">
+        <div class="card-header">Delete Confirmation</div>
+        <div class="card-body">
+            <p><strong>@Model.Publisher.Name</strong></p>
+            <p>Country: @Model.Publisher.Country</p>
+            <p class="mb-4">Games: @Model.GameCount</p>
+
+            @if (!Model.CanDelete)
+            {
+                <p class="text-danger mb-0">Delete is not allowed because this publisher has related games.</p>
+            }
+            else
+            {
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" name="id" value="@Model.Publisher.Id" />
+                    <button type="submit" class="btn game-btn-danger">Confirm Delete</button>
+                </form>
+            }
+        </div>
+    </div>
+</section>

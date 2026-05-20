@@ -1,0 +1,24 @@
+@model BoardGameReviews.Models.AutocompleteDropdownViewModel
+
+<div class="autocomplete-dropdown" data-autocomplete-dropdown data-lookup-url="@Model.LookupUrl">
+    <label class="form-label" for="@Model.InputId">@Model.Label</label>
+    <input type="hidden"
+           name="@Model.InputName"
+           id="@Model.InputId"
+           value="@Model.SelectedId"
+           data-autocomplete-value
+           data-required-message="@Model.RequiredValidationMessage" />
+    <input type="text"
+           class="form-control autocomplete-dropdown__input"
+           value="@Model.SelectedLabel"
+           placeholder="@Model.Placeholder"
+           autocomplete="off"
+           data-autocomplete-input
+           aria-autocomplete="list"
+           aria-expanded="false" />
+    <div class="autocomplete-dropdown__panel" data-autocomplete-panel hidden>
+        <div class="autocomplete-dropdown__results" data-autocomplete-results></div>
+    </div>
+    <span class="text-danger field-validation-error autocomplete-dropdown__validation @(string.IsNullOrWhiteSpace(Model.ValidationMessage) ? "autocomplete-dropdown__validation--hidden" : string.Empty)"
+          data-autocomplete-validation>@Model.ValidationMessage</span>
+</div>

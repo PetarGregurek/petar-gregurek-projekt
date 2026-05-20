@@ -1,0 +1,43 @@
+@model BoardGameReviews.Models.GameIndexViewModel
+
+@if (Model.Games.Count == 0)
+{
+    <tr>
+        <td colspan="11" class="text-secondary">No results found for the current query.</td>
+    </tr>
+}
+else
+{
+    @foreach (var item in Model.Games)
+    {
+        var difficultyClass = item.Game.Difficulty switch
+        {
+            Difficulty.Easy => "difficulty-easy",
+            Difficulty.Medium => "difficulty-medium",
+            _ => "difficulty-hard"
+        };
+
+        <tr>
+            <td>
+                <div class="fw-semibold">@item.Game.Name</div>
+                <div class="small text-secondary">@item.Game.Description</div>
+            </td>
+            <td>@item.Game.YearPublished</td>
+            <td>@item.Game.MinPlayers - @item.Game.MaxPlayers</td>
+            <td><span class="difficulty-pill @difficultyClass">@item.Game.Difficulty</span></td>
+            <td>@item.GameTypeName</td>
+            <td>@item.PublisherName</td>
+            <td>@item.CategoryName</td>
+            <td>@item.ReviewCount</td>
+            <td>@(item.AverageRating?.ToString("0.0") ?? "N/A")</td>
+            <td>@item.EventCount</td>
+            <td>
+                <div class="table-actions">
+                    <a asp-controller="Game" asp-action="Details" asp-route-id="@item.Game.Id" class="btn btn-sm game-btn-primary">Details</a>
+                    <a asp-controller="Game" asp-action="Edit" asp-route-id="@item.Game.Id" class="btn btn-sm game-btn-outline">Edit</a>
+                    <a asp-controller="Game" asp-action="Delete" asp-route-id="@item.Game.Id" class="btn btn-sm game-btn-danger">Delete</a>
+                </div>
+            </td>
+        </tr>
+    }
+}

@@ -1,0 +1,92 @@
+@model BoardGameReviews.Models.GameFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<div class="game-form-grid">
+    <div>
+        <label asp-for="Input.Name" class="form-label"></label>
+        <input asp-for="Input.Name" class="form-control" />
+        <span asp-validation-for="Input.Name" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.YearPublished" class="form-label"></label>
+        <input asp-for="Input.YearPublished" class="form-control" />
+        <span asp-validation-for="Input.YearPublished" class="text-danger"></span>
+    </div>
+
+    <div class="game-form-grid__full">
+        <label asp-for="Input.Description" class="form-label"></label>
+        <textarea asp-for="Input.Description" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Input.Description" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.MinPlayers" class="form-label"></label>
+        <input asp-for="Input.MinPlayers" class="form-control" />
+        <span asp-validation-for="Input.MinPlayers" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.MaxPlayers" class="form-label"></label>
+        <input asp-for="Input.MaxPlayers" class="form-control" />
+        <span asp-validation-for="Input.MaxPlayers" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Difficulty" class="form-label"></label>
+        <select asp-for="Input.Difficulty" asp-items="Model.DifficultyOptions" class="form-control"></select>
+        <span asp-validation-for="Input.Difficulty" class="text-danger"></span>
+    </div>
+
+    <div>
+        @await Html.PartialAsync("_AutocompleteDropdown", new BoardGameReviews.Models.AutocompleteDropdownViewModel
+        {
+            InputName = "Input.GameTypeId",
+            InputId = "Input_GameTypeId",
+            Label = "Game Type",
+            LookupUrl = Url.Action("Lookup", "Game", new { entityType = "gametype" }) ?? string.Empty,
+            Placeholder = "Search game type",
+            SelectedId = Model.Input.GameTypeId,
+            SelectedLabel = Model.GameTypeDisplayName,
+            RequiredValidationMessage = "Select a game type.",
+            ValidationMessage = ViewData.ModelState["Input.GameTypeId"]?.Errors.FirstOrDefault()?.ErrorMessage
+        })
+    </div>
+
+    <div>
+        @await Html.PartialAsync("_AutocompleteDropdown", new BoardGameReviews.Models.AutocompleteDropdownViewModel
+        {
+            InputName = "Input.PublisherId",
+            InputId = "Input_PublisherId",
+            Label = "Publisher",
+            LookupUrl = Url.Action("Lookup", "Game", new { entityType = "publisher" }) ?? string.Empty,
+            Placeholder = "Search publisher",
+            SelectedId = Model.Input.PublisherId,
+            SelectedLabel = Model.PublisherDisplayName,
+            RequiredValidationMessage = "Select a publisher.",
+            ValidationMessage = ViewData.ModelState["Input.PublisherId"]?.Errors.FirstOrDefault()?.ErrorMessage
+        })
+    </div>
+
+    <div>
+        @await Html.PartialAsync("_AutocompleteDropdown", new BoardGameReviews.Models.AutocompleteDropdownViewModel
+        {
+            InputName = "Input.CategoryId",
+            InputId = "Input_CategoryId",
+            Label = "Category",
+            LookupUrl = Url.Action("Lookup", "Game", new { entityType = "category" }) ?? string.Empty,
+            Placeholder = "Search category",
+            SelectedId = Model.Input.CategoryId,
+            SelectedLabel = Model.CategoryDisplayName,
+            RequiredValidationMessage = "Select a category.",
+            ValidationMessage = ViewData.ModelState["Input.CategoryId"]?.Errors.FirstOrDefault()?.ErrorMessage
+        })
+    </div>
+    
+</div>
+
+<div class="game-form-actions">
+    <button type="submit" class="btn game-btn-primary">@(Model.IsEdit ? "Save Changes" : "Create Game")</button>
+    <a asp-controller="Game" asp-action="Index" class="btn game-btn-outline">Cancel</a>
+</div>

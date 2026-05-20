@@ -1,0 +1,40 @@
+@model BoardGameReviews.Models.CategoryFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<div class="game-form-grid">
+    <div>
+        <label asp-for="Input.Name" class="form-label"></label>
+        <input asp-for="Input.Name" class="form-control" />
+        <span asp-validation-for="Input.Name" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.AgeGroup" class="form-label"></label>
+        <input asp-for="Input.AgeGroup" class="form-control" placeholder="e.g. 10+" />
+        <span asp-validation-for="Input.AgeGroup" class="text-danger"></span>
+    </div>
+
+    <div class="game-form-grid__full">
+        <label asp-for="Input.Description" class="form-label"></label>
+        <textarea asp-for="Input.Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Input.Description" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Difficulty" class="form-label"></label>
+        <select asp-for="Input.Difficulty" asp-items="Model.DifficultyOptions" class="form-control"></select>
+        <span asp-validation-for="Input.Difficulty" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Input.Popularity" class="form-label"></label>
+        <input asp-for="Input.Popularity" class="form-control" />
+        <span asp-validation-for="Input.Popularity" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="game-form-actions">
+    <button type="submit" class="btn game-btn-primary">@(Model.IsEdit ? "Save Changes" : "Create Category")</button>
+    <a asp-action="Index" class="btn game-btn-outline">Back to List</a>
+</div>

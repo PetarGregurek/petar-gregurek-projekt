@@ -14,15 +14,15 @@
             <nav class="site-nav" aria-label="Main navigation">
                 <a class="site-brand" asp-area="" asp-controller="Home" asp-action="Index">BoardGameReviews</a>
                 <ul class="site-nav-links">
-                    <li><a class="site-nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="Game" asp-action="Index">Games</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="Category" asp-action="Index">Categories</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="GameType" asp-action="Index">Types</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="Publisher" asp-action="Index">Publishers</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="User" asp-action="Index">Users</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="Review" asp-action="Index">Reviews</a></li>
-                    <li><a class="site-nav-link" asp-area="" asp-controller="Event" asp-action="Index">Events</a></li>
+                    <li><a class="site-nav-link" data-controller="home" data-route="" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li><a class="site-nav-link" data-controller="home" data-route="privacy" data-action="privacy" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
+                    <li><a class="site-nav-link" data-controller="game" data-route="games" asp-area="" asp-controller="Game" asp-action="Index">Games</a></li>
+                    <li><a class="site-nav-link" data-controller="category" data-route="categories" asp-area="" asp-controller="Category" asp-action="Index">Categories</a></li>
+                    <li><a class="site-nav-link" data-controller="gametype" data-route="game-types" asp-area="" asp-controller="GameType" asp-action="Index">Types</a></li>
+                    <li><a class="site-nav-link" data-controller="publisher" data-route="publishers" asp-area="" asp-controller="Publisher" asp-action="Index">Publishers</a></li>
+                    <li><a class="site-nav-link" data-controller="user" data-route="users" asp-area="" asp-controller="User" asp-action="Index">Users</a></li>
+                    <li><a class="site-nav-link" data-controller="review" data-route="reviews" asp-area="" asp-controller="Review" asp-action="Index">Reviews</a></li>
+                    <li><a class="site-nav-link" data-controller="event" data-route="events" asp-area="" asp-controller="Event" asp-action="Index">Events</a></li>
                 </ul>
             </nav>
         </div>

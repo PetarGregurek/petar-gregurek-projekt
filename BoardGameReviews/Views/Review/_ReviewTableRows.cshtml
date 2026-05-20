@@ -1,0 +1,29 @@
+@model BoardGameReviews.Models.ReviewIndexViewModel
+
+@if (Model.Reviews.Count == 0)
+{
+    <tr>
+        <td colspan="7" class="text-secondary">No results found for the current query.</td>
+    </tr>
+}
+else
+{
+    @foreach (var item in Model.Reviews)
+    {
+        <tr>
+            <td><div class="fw-semibold">@item.Review.Title</div></td>
+            <td>@item.GameName</td>
+            <td>@item.Username</td>
+            <td>@item.Review.Rating / 5</td>
+            <td>@(item.Review.IsRecommended ? "Yes" : "No")</td>
+            <td>@item.Review.CreatedAt.ToString("yyyy-MM-dd")</td>
+            <td>
+                <div class="table-actions">
+                    <a asp-action="Details" asp-route-id="@item.Review.Id" class="btn btn-sm game-btn-primary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@item.Review.Id" class="btn btn-sm game-btn-outline">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Review.Id" class="btn btn-sm game-btn-danger">Delete</a>
+                </div>
+            </td>
+        </tr>
+    }
+}

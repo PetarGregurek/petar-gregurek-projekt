@@ -1,48 +1,50 @@
-@model List<BoardGameReviews.Models.ReviewListItemViewModel>
+@model BoardGameReviews.Models.ReviewIndexViewModel
 
 @{
     ViewData["Title"] = "Reviews";
 }
 
 <section class="game-page game-list-page">
-    <div class="game-hero mb-4 d-flex justify-content-between align-items-start gap-3 flex-wrap">
-        <div>
-            <p class="eyebrow mb-2">Entity Index</p>
-            <h1 class="mb-0">Reviews</h1>
-        </div>
-        <a asp-controller="Game" asp-action="Index" class="btn game-btn-outline">Games</a>
+    <div class="game-hero mb-4">
+        <p class="eyebrow mb-2">BoardGameReviews</p>
+        <h1 class="mb-2">Reviews</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+        {
+            <div class="status-banner mb-3">@Model.StatusMessage</div>
+        }
     </div>
 
-    <div class="entity-block game-table-wrap">
-        <div class="entity-header">Review list (@Model.Count)</div>
+    <div id="reviews" class="entity-block game-table-wrap mb-4">
+        <div class="entity-header">Reviews</div>
+        <div class="list-toolbar">
+            <div class="list-toolbar__search">
+                <label class="form-label" for="review-search">Search</label>
+                <input id="review-search"
+                       class="form-control list-search-input"
+                       type="search"
+                       placeholder="Search by title, game, or user"
+                       value="@Model.Search"
+                       data-ajax-search
+                       data-search-url="@Url.Action("Index", "Review")"
+                       data-search-target="#reviews-table-body" />
+            </div>
+            <a class="btn game-btn-primary list-toolbar__action" asp-action="Create">New Review</a>
+        </div>
         <div class="table-responsive">
             <table class="table game-table align-middle mb-0">
                 <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Rating</th>
                         <th>Game</th>
                         <th>User</th>
+                        <th>Rating</th>
                         <th>Recommended</th>
                         <th>Date</th>
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var review in Model)
-                    {
-                        <tr>
-                            <td>@review.Review.Title</td>
-                            <td>@review.Review.Rating</td>
-                            <td>@review.GameName</td>
-                            <td>@review.Username</td>
-                            <td>@(review.Review.IsRecommended ? "Yes" : "No")</td>
-                            <td>@review.Review.CreatedAt.ToString("dd.MM.yyyy")</td>
-                            <td>
-                                <a asp-action="Details" asp-route-id="@review.Review.Id" class="btn btn-sm game-btn-primary">Details</a>
-                            </td>
-                        </tr>
-                    }
+                <tbody id="reviews-table-body">
+                    @await Html.PartialAsync("_ReviewTableRows", Model)
                 </tbody>
             </table>
         </div>

@@ -1,0 +1,28 @@
+@model BoardGameReviews.Models.EventIndexViewModel
+
+@if (Model.Events.Count == 0)
+{
+    <tr>
+        <td colspan="6" class="text-secondary">No results found for the current query.</td>
+    </tr>
+}
+else
+{
+    @foreach (var item in Model.Events)
+    {
+        <tr>
+            <td><div class="fw-semibold">@item.Event.Name</div></td>
+            <td>@item.GameName</td>
+            <td>@item.Event.StartDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@item.Event.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@item.Event.Location</td>
+            <td>
+                <div class="table-actions">
+                    <a asp-action="Details" asp-route-id="@item.Event.Id" class="btn btn-sm game-btn-primary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@item.Event.Id" class="btn btn-sm game-btn-outline">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Event.Id" class="btn btn-sm game-btn-danger">Delete</a>
+                </div>
+            </td>
+        </tr>
+    }
+}

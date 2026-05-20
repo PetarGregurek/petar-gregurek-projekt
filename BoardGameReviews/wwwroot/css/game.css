@@ -55,6 +55,7 @@
 
 .game-table {
   margin-bottom: 0;
+  width: 100%;
 }
 
 .game-table thead th {
@@ -70,6 +71,10 @@
 .game-table tbody td {
   border-color: #dfe8ef;
   vertical-align: middle;
+}
+
+.game-table tbody td:last-child {
+  text-align: right;
 }
 
 .game-table tbody tr:nth-child(even) td {
@@ -147,12 +152,201 @@
   background: #ffffff;
 }
 
+.game-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.game-form-grid__full {
+  grid-column: 1 / -1;
+}
+
+.game-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.game-form-actions .btn {
+  flex: 1 1 0;
+  text-align: center;
+}
+
+.list-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #d8e5ef;
+  background: #f8fbff;
+}
+
+.list-toolbar__search {
+  flex: 1 1 auto;
+}
+
+.list-toolbar__action {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.list-search-input {
+  max-width: 30rem;
+}
+
+.table-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: stretch;
+  width: 7.5rem;
+  margin-left: auto;
+}
+
+.table-actions .btn {
+  width: 100%;
+  text-align: center;
+}
+
+.game-btn-danger {
+  background: #a11d33;
+  border-color: #a11d33;
+  color: #fff;
+  font-weight: 600;
+}
+
+.game-btn-danger:hover,
+.game-btn-danger:focus {
+  background: #82172a;
+  border-color: #82172a;
+  color: #fff;
+}
+
+.status-banner {
+  display: inline-flex;
+  padding: 0.5rem 0.75rem;
+  background: #dcf4e8;
+  color: #0d5a42;
+  border: 1px solid #aad9c6;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.autocomplete-dropdown {
+  position: relative;
+}
+
+.game-form-page .game-card,
+.game-form-page .game-card .card-body,
+.game-form-grid,
+.game-form-grid > div {
+  overflow: visible;
+}
+
+.autocomplete-dropdown__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  background: #fff;
+  border: 1px solid #cfe0ea;
+  border-radius: 14px;
+  box-shadow: 0 14px 32px rgba(18, 40, 65, 0.14);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.autocomplete-dropdown__results {
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.autocomplete-dropdown__option {
+  width: 100%;
+  border: 0;
+  background: #fff;
+  padding: 0.8rem 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid #ebf1f6;
+}
+
+.autocomplete-dropdown__option:hover,
+.autocomplete-dropdown__option:focus {
+  background: #eef7f5;
+}
+
+.autocomplete-dropdown__option-title {
+  display: block;
+  font-weight: 700;
+}
+
+.autocomplete-dropdown__option-meta {
+  display: block;
+  font-size: 0.85rem;
+  color: #587082;
+  margin-top: 0.15rem;
+}
+
+.autocomplete-dropdown__empty {
+  padding: 0.8rem 0.9rem;
+  color: #587082;
+}
+
+.autocomplete-dropdown__validation {
+  display: block;
+  margin-top: 0.3rem;
+}
+
+.autocomplete-dropdown__validation--hidden {
+  display: none;
+}
+
+@keyframes field-shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+
+.field-shake {
+  animation: field-shake 0.35s ease-in-out;
+}
+
+.form-control.field-missing,
+.autocomplete-dropdown__input.field-missing,
+select.field-missing,
+textarea.field-missing {
+  border-color: #b42335;
+  background: #ffe5e8;
+  box-shadow: 0 0 0 3px rgba(180, 35, 53, 0.2);
+}
+
+
 .game-event-list .list-group-item {
   border-color: #dce7ef;
   background: #f8fbff;
 }
 
 @media (max-width: 767.98px) {
+  .game-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .list-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .list-toolbar__action {
+    width: 100%;
+  }
+
   .game-hero {
     padding: 1rem;
   }

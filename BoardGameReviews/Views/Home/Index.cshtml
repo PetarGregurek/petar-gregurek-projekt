@@ -12,29 +12,29 @@
     <div class="home-hero-grid">
         <article class="home-hero-card">
             <p class="home-kicker">Community Picks</p>
-            <h1>Pronađi svoju sljedeću omiljenu društvenu igru.</h1>
-            <p class="home-lead">Istraži recenzije, događaje i top naslove</p>
+            <h1>Find your next favorite board game.</h1>
+            <p class="home-lead">Explore reviews, events, and top titles</p>
             <div class="home-cta-row">
-                <a class="btn home-btn-main" asp-controller="Game" asp-action="Index">Pogledaj sve igre</a>
-                <a class="btn home-btn-sub" asp-controller="Game" asp-action="Details" asp-route-id="1">Otvori primjer detalja</a>
+                <a class="btn home-btn-main" asp-controller="Game" asp-action="Index">Browse all games</a>
+                <a class="btn home-btn-sub" asp-controller="Game" asp-action="Details" asp-route-id="1">Open sample details</a>
             </div>
         </article>
 
         <aside class="home-stats-card">
-            <h2>Pregled platforme</h2>
+            <h2>Platform Overview</h2>
             <ul>
-                <li><span>Igre</span><strong>@Model.TotalGames</strong></li>
-                <li><span>Recenzije</span><strong>@Model.TotalReviews</strong></li>
-                <li><span>Korisnici</span><strong>@Model.TotalUsers</strong></li>
-                <li><span>Događaji</span><strong>@Model.TotalEvents</strong></li>
+                <li><span>Games</span><strong>@Model.TotalGames</strong></li>
+                <li><span>Reviews</span><strong>@Model.TotalReviews</strong></li>
+                <li><span>Users</span><strong>@Model.TotalUsers</strong></li>
+                <li><span>Events</span><strong>@Model.TotalEvents</strong></li>
             </ul>
         </aside>
     </div>
 
     <section class="home-section">
         <div class="home-section-head">
-            <h2>Top ocijenjene igre</h2>
-            <p>Temeljeno na prosjeku ocjena iz postojećih recenzija.</p>
+            <h2>Top Rated Games</h2>
+            <p>Based on average ratings from existing reviews.</p>
         </div>
         <div class="home-top-grid">
             @foreach (var item in Model.TopGames)
@@ -45,9 +45,9 @@
                     <p>@item.Game.Description</p>
                     <div class="home-top-foot">
                         <span>@item.AverageRating.ToString("0.0") / 5</span>
-                        <span>@item.ReviewCount recenzija</span>
+                        <span>@item.ReviewCount reviews</span>
                     </div>
-                    <a asp-controller="Game" asp-action="Details" asp-route-id="@item.Game.Id">Detalji igre</a>
+                    <a asp-controller="Game" asp-action="Details" asp-route-id="@item.Game.Id">Game details</a>
                 </article>
             }
         </div>
@@ -56,12 +56,12 @@
     <section class="home-section home-split">
         <article class="home-timeline">
             <div class="home-section-head">
-                <h2>Aktivni i nadolazeći događaji</h2>
+                <h2>Active and Upcoming Events</h2>
             </div>
 
             @if (Model.UpcomingEvents.Count == 0)
             {
-                <p class="home-empty">Trenutno nema aktivnih događaja.</p>
+                <p class="home-empty">There are currently no active events.</p>
             }
             else
             {
@@ -82,14 +82,14 @@
 
         <article class="home-categories">
             <div class="home-section-head">
-                <h2>Popularne kategorije</h2>
+                <h2>Popular Categories</h2>
             </div>
             <div class="home-chip-wrap">
                 @foreach (var item in Model.PopularCategories)
                 {
                     <div class="home-chip">
                         <strong>@item.Category.Name</strong>
-                        <span>@item.ReviewCount recenzija</span>
+                        <span>@item.ReviewCount reviews</span>
                         <small>@item.Category.AgeGroup • @item.Category.Difficulty</small>
                     </div>
                 }

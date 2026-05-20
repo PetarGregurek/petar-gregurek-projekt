@@ -1,0 +1,28 @@
+@model BoardGameReviews.Models.CategoryIndexViewModel
+
+@if (Model.Categories.Count == 0)
+{
+    <tr>
+        <td colspan="6" class="text-secondary">No results found for the current query.</td>
+    </tr>
+}
+else
+{
+    @foreach (var category in Model.Categories)
+    {
+        <tr>
+            <td><div class="fw-semibold">@category.Name</div></td>
+            <td>@category.Description</td>
+            <td>@category.AgeGroup</td>
+            <td>@category.Difficulty</td>
+            <td>@category.Popularity</td>
+            <td>
+                <div class="table-actions">
+                    <a asp-action="Details" asp-route-id="@category.Id" class="btn btn-sm game-btn-primary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-sm game-btn-outline">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@category.Id" class="btn btn-sm game-btn-danger">Delete</a>
+                </div>
+            </td>
+        </tr>
+    }
+}
