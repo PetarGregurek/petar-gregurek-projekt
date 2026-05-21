@@ -3,16 +3,16 @@
 @{
     var isoValue = Model.Value.HasValue ? Model.Value.Value.ToString("yyyy-MM-ddTHH:mm") : string.Empty;
     var hasError = !string.IsNullOrWhiteSpace(Model.ValidationMessage);
-    var inputClass = hasError ? "field-missing" : string.Empty;
+       var inputClass = hasError ? "field-missing" : string.Empty;
 }
 
 <div class="dtp-picker"
      data-dtp
      data-field-name="@Model.FieldName"
      data-required="@(Model.IsRequired ? "true" : "false")"
-     data-required-message="@Model.RequiredErrorMessage">
+        data-required-message="@Model.RequiredErrorMessage">
 
-    <label class="form-label" for="@(Model.FieldId)_date">@Model.Label</label>
+       <label class="form-label" for="@(Model.FieldId)_trigger">@Model.Label</label>
 
     @* Hidden input carries the ISO value for model binding *@
     <input type="hidden"
@@ -21,25 +21,62 @@
            value="@isoValue"
            data-dtp-hidden />
 
-    <div class="dtp-inputs">
-        <input type="text"
-               id="@(Model.FieldId)_date"
-               class="form-control dtp-date-input @inputClass"
-               autocomplete="off"
-               maxlength="10"
-               data-dtp-date
-               aria-label="@Model.Label date" />
-        <span class="dtp-sep" aria-hidden="true">–</span>
-        <input type="text"
-               id="@(Model.FieldId)_time"
-               class="form-control dtp-time-input @inputClass"
-               autocomplete="off"
-               placeholder="HH:mm"
-               maxlength="5"
-               data-dtp-time
-               aria-label="@Model.Label time" />
+       <button type="button"
+                     class="form-control dtp-trigger @inputClass"
+                     id="@(Model.FieldId)_trigger"
+                     data-dtp-trigger
+                     aria-expanded="false"
+                     aria-controls="@(Model.FieldId)_panel">
+              <span class="dtp-trigger__value" data-dtp-summary>@(Model.Value.HasValue ? Model.Value.Value.ToString("g") : string.Empty)</span>
+              <span class="dtp-trigger__meta">▾</span>
+       </button>
+
+       <div class="dtp-panel" id="@(Model.FieldId)_panel" data-dtp-panel hidden role="dialog" aria-label="@Model.Label picker">
+              <div class="dtp-panel__grid">
+                     <section class="dtp-section dtp-section--calendar">
+                            <div class="dtp-section__header">
+                                   <button type="button" class="dtp-nav-btn" data-dtp-prev aria-label="Previous month">‹</button>
+                                   <div class="dtp-section__title" data-dtp-month-label></div>
+                                   <button type="button" class="dtp-nav-btn" data-dtp-next aria-label="Next month">›</button>
+                            </div>
+                            <div class="dtp-weekdays" data-dtp-weekdays></div>
+                            <div class="dtp-day-grid" data-dtp-days></div>
+                     </section>
+
+                     <section class="dtp-section dtp-section--clock">
+                            <div class="dtp-section__header dtp-section__header--stacked">
+                                   <div class="dtp-section__title">Time</div>
+                                   <div class="dtp-period-toggle" role="group" aria-label="AM PM toggle">
+                                          <button type="button" class="dtp-period-toggle__btn" data-dtp-am>AM</button>
+                                          <button type="button" class="dtp-period-toggle__btn" data-dtp-pm>PM</button>
+                                   </div>
+                            </div>
+
+                            <div class="dtp-clock-stack">
+                                   <div class="dtp-clock-card">
+                                          <div class="dtp-clock-card__title">Hours</div>
+                                          <div class="dtp-clock" data-dtp-hour-clock>
+                                                 <div class="dtp-clock__center" data-dtp-hour-display>--</div>
+                                          </div>
+                                   </div>
+
+                                   <div class="dtp-clock-card">
+                                          <div class="dtp-clock-card__title">Minutes</div>
+                                          <div class="dtp-clock dtp-clock--minutes" data-dtp-minute-clock>
+                                                 <div class="dtp-clock__center" data-dtp-minute-display>--</div>
+                                          </div>
+                                   </div>
+                            </div>
+                     </section>
+              </div>
+
+              <div class="dtp-panel__footer">
+                     <button type="button" class="btn dtp-panel__button dtp-panel__button--ghost" data-dtp-today>Today</button>
+                     <button type="button" class="btn dtp-panel__button dtp-panel__button--ghost" data-dtp-clear>Clear</button>
+                     <button type="button" class="btn dtp-panel__button game-btn-primary" data-dtp-close>Done</button>
+              </div>
     </div>
 
-    <span class="text-danger @(hasError ? "field-validation-error" : "field-validation-valid")"
-          data-dtp-validation>@Model.ValidationMessage</span>
+       <span class="text-danger @(hasError ? "field-validation-error" : "field-validation-valid")"
+                data-dtp-validation>@Model.ValidationMessage</span>
 </div>

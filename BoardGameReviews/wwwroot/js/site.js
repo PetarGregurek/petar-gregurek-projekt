@@ -360,9 +360,67 @@ const wireAutocompleteDropdowns = () => {
 };
 
 const wireDateTimePickers = () => {
-	// Detect locale once for all pickers on the page
-	const lang = ((navigator.languages && navigator.languages[0]) || navigator.language || 'hr').toLowerCase();
-	const isHr = lang.startsWith('hr');
+	const locale = ((navigator.languages && navigator.languages[0]) || navigator.language || 'hr').toLowerCase();
+	const isHr = locale.startsWith('hr');
+	const requiredDateMessage = isHr ? 'Odaberite datum i vrijeme.' : 'Select date and time.';
+	const partialMessage = isHr ? 'Odaberite i datum i vrijeme.' : 'Select both date and time.';
+	const invalidMessage = isHr ? 'Neispravna vrijednost datuma i vremena.' : 'Invalid date/time value.';
+	const todayLabel = isHr ? 'Danas' : 'Today';
+	const clearLabel = isHr ? 'Obriši' : 'Clear';
+	const doneLabel = isHr ? 'Gotovo' : 'Done';
+	const hoursLabel = isHr ? 'Sati' : 'Hours';
+	const minutesLabel = isHr ? 'Minute' : 'Minutes';
+	const selectDateText = isHr ? 'Odaberite datum' : 'Select date';
+	const selectTimeText = isHr ? 'Odaberite vrijeme' : 'Select time';
+
+	const monthFormatter = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
+	const dayFormatter = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
+	const summaryFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+	const timeFormatter = new Intl.DateTimeFormat(locale, { timeStyle: 'short' });
+	const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+	const weekdaySeed = isHr ? [1, 2, 3, 4, 5, 6, 7] : [7, 1, 2, 3, 4, 5, 6];
+	const weekdayLabels = weekdaySeed.map((day) => weekdayFormatter.format(new Date(2024, 0, day)));
+
+	const parseISO = (iso) => {
+		if (!iso) {
+			return null;
+		}
+
+		const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+		if (!match) {
+			return null;
+		}
+
+		const year = Number(match[1]);
+		const month = Number(match[2]);
+		const day = Number(match[3]);
+		const hour = Number(match[4]);
+		const minute = Number(match[5]);
+		const parsed = new Date(year, month - 1, day, hour, minute, 0, 0);
+
+		if (Number.isNaN(parsed.getTime()) || parsed.getFullYear() !== year || parsed.getMonth() + 1 !== month || parsed.getDate() !== day) {
+			return null;
+		}
+
+		return parsed;
+	};
+
+	const toISO = (date) =>
+		`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+	const clampMonth = (year, month) => {
+		if (month < 0) {
+			return { year: year - 1, month: 11 };
+		}
+
+		if (month > 11) {
+			return { year: year + 1, month: 0 };
+		}
+
+		return { year, month };
+	};
+
+	const getHour12 = (hour24) => (hour24 % 12) || 12;
 
 	document.querySelectorAll('[data-dtp]').forEach((root) => {
 		if (root.dataset.dtpBound === 'true') {
@@ -372,229 +430,394 @@ const wireDateTimePickers = () => {
 		root.dataset.dtpBound = 'true';
 
 		const hidden = root.querySelector('[data-dtp-hidden]');
-		const dateInput = root.querySelector('[data-dtp-date]');
-		const timeInput = root.querySelector('[data-dtp-time]');
+		const trigger = root.querySelector('[data-dtp-trigger]');
+		const summary = root.querySelector('[data-dtp-summary]');
+		const panel = root.querySelector('[data-dtp-panel]');
 		const validation = root.querySelector('[data-dtp-validation]');
+		const monthLabel = root.querySelector('[data-dtp-month-label]');
+		const weekdays = root.querySelector('[data-dtp-weekdays]');
+		const daysGrid = root.querySelector('[data-dtp-days]');
+		const prevButton = root.querySelector('[data-dtp-prev]');
+		const nextButton = root.querySelector('[data-dtp-next]');
+		const hourClock = root.querySelector('[data-dtp-hour-clock]');
+		const minuteClock = root.querySelector('[data-dtp-minute-clock]');
+		const hourDisplay = root.querySelector('[data-dtp-hour-display]');
+		const minuteDisplay = root.querySelector('[data-dtp-minute-display]');
+		const amButton = root.querySelector('[data-dtp-am]');
+		const pmButton = root.querySelector('[data-dtp-pm]');
+		const todayButton = root.querySelector('[data-dtp-today]');
+		const clearButton = root.querySelector('[data-dtp-clear]');
+		const closeButton = root.querySelector('[data-dtp-close]');
 
-		if (!hidden || !dateInput || !timeInput) {
+		if (!hidden || !trigger || !summary || !panel || !validation || !monthLabel || !weekdays || !daysGrid || !prevButton || !nextButton || !hourClock || !minuteClock || !hourDisplay || !minuteDisplay || !amButton || !pmButton || !todayButton || !clearButton || !closeButton) {
 			return;
 		}
 
 		const isRequired = root.dataset.required === 'true';
-		const requiredMessage = root.dataset.requiredMessage || 'This field is required.';
+		const requiredMessage = root.dataset.requiredMessage || requiredDateMessage;
+		const today = new Date();
 
-		// Date display format based on locale
-		dateInput.placeholder = isHr ? 'dd.MM.yyyy' : 'MM/dd/yyyy';
-
-		// ── Parse ISO string (yyyy-MM-ddTHH:mm) ─────────────────────────
-		const parseISO = (iso) => {
-			if (!iso) {
-				return null;
-			}
-
-			const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-			if (!m) {
-				return null;
-			}
-
-			return { year: +m[1], month: +m[2], day: +m[3], hour: +m[4], minute: +m[5] };
+		const state = {
+			viewYear: today.getFullYear(),
+			viewMonth: today.getMonth(),
+			selectedYear: null,
+			selectedMonth: null,
+			selectedDay: null,
+			selectedHour: null,
+			selectedMinute: null,
+			period: 'AM'
 		};
 
-		// ── Format components → display strings ──────────────────────────
-		const formatDateDisplay = ({ day, month, year }) => {
-			const d = String(day).padStart(2, '0');
-			const mo = String(month).padStart(2, '0');
-			return isHr ? `${d}.${mo}.${year}` : `${mo}/${d}/${year}`;
+		const hasDate = () => state.selectedYear !== null && state.selectedMonth !== null && state.selectedDay !== null;
+		const hasTime = () => state.selectedHour !== null && state.selectedMinute !== null;
+		const hasCompleteSelection = () => hasDate() && hasTime();
+
+		const getSelectedDateTime = () => {
+			if (!hasCompleteSelection()) {
+				return null;
+			}
+
+			const hour12 = state.selectedHour === 12 ? 0 : state.selectedHour;
+			const hour24 = state.period === 'PM' ? hour12 + 12 : hour12;
+			return new Date(state.selectedYear, state.selectedMonth - 1, state.selectedDay, hour24, state.selectedMinute, 0, 0);
 		};
 
-		const formatTimeDisplay = ({ hour, minute }) =>
-			`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-
-		// ── Parse user date input ────────────────────────────────────────
-		const parseUserDate = (str) => {
-			const s = (str || '').trim();
-			if (!s) {
-				return null;
-			}
-
-			// Accept . / - or space as separators
-			const parts = s.split(/[\.\/ \-]+/);
-			if (parts.length !== 3) {
-				return null;
-			}
-
-			let day, month, year;
-			if (isHr) {
-				[day, month, year] = parts.map(Number);
-			} else {
-				[month, day, year] = parts.map(Number);
-			}
-
-			if (!day || !month || !year || isNaN(day) || isNaN(month) || isNaN(year)) {
-				return null;
-			}
-
-			// 2-digit year → 20xx
-			if (year < 100) {
-				year += 2000;
-			}
-
-			if (month < 1 || month > 12) {
-				return null;
-			}
-
-			const maxDay = new Date(year, month, 0).getDate();
-			if (day < 1 || day > maxDay) {
-				return null;
-			}
-
-			return { day, month, year };
+		const setValidationState = (message, stateClass) => {
+			validation.textContent = message || '';
+			validation.classList.remove('field-validation-valid', 'field-validation-error');
+			validation.classList.add(stateClass === 'valid' ? 'field-validation-valid' : 'field-validation-error');
+			trigger.classList.toggle('field-missing', stateClass !== 'valid');
 		};
 
-		// ── Parse user time input ────────────────────────────────────────
-		const parseUserTime = (str) => {
-			const s = (str || '').trim();
-			if (!s) {
-				return null;
-			}
-
-			const parts = s.split(':');
-			if (parts.length !== 2) {
-				return null;
-			}
-
-			const hour = Number(parts[0]);
-			const minute = Number(parts[1]);
-			if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
-				return null;
-			}
-
-			if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-				return null;
-			}
-
-			return { hour, minute };
-		};
-
-		// ── Build ISO string from parts ──────────────────────────────────
-		const toISO = ({ day, month, year }, { hour, minute }) =>
-			`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-
-		// ── Sync hidden field from visual inputs ─────────────────────────
-		const updateHidden = () => {
-			const dateStr = dateInput.value.trim();
-			const timeStr = timeInput.value.trim();
-
-			if (!dateStr && !timeStr) {
-				hidden.value = '';
+		const renderSummary = () => {
+			const dt = getSelectedDateTime();
+			if (dt) {
+				summary.textContent = summaryFormatter.format(dt);
+				hidden.value = toISO(dt);
 				return;
 			}
 
-			const dateParts = parseUserDate(dateStr);
-			const timeParts = parseUserTime(timeStr || '00:00');
-			hidden.value = (dateParts && timeParts) ? toISO(dateParts, timeParts) : '';
+			hidden.value = '';
+			if (hasDate() && hasTime()) {
+				summary.textContent = invalidMessage;
+				return;
+			}
+
+			if (hasDate()) {
+				const date = new Date(state.selectedYear, state.selectedMonth - 1, state.selectedDay);
+				summary.textContent = `${dayFormatter.format(date)} • ${selectTimeText}`;
+				return;
+			}
+
+			if (hasTime()) {
+				summary.textContent = `${selectDateText} • ${state.selectedHour}:${String(state.selectedMinute).padStart(2, '0')}`;
+				return;
+			}
+
+			summary.textContent = isHr ? 'Odaberite datum i vrijeme' : 'Select date and time';
 		};
 
-		// ── Validation state ─────────────────────────────────────────────
-		const setDtpState = (state, message) => {
-			if (validation) {
-				validation.textContent = message || '';
-				if (state === 'valid') {
-					validation.classList.remove('field-validation-error');
-					validation.classList.add('field-validation-valid');
-				} else {
-					validation.classList.remove('field-validation-valid');
-					validation.classList.add('field-validation-error');
-				}
+		const renderWeekdays = () => {
+			weekdays.innerHTML = weekdayLabels.map((label) => `<div class="dtp-weekday">${label}</div>`).join('');
+		};
+
+		const renderCalendar = () => {
+			const firstOfMonth = new Date(state.viewYear, state.viewMonth, 1);
+			const daysInMonth = new Date(state.viewYear, state.viewMonth + 1, 0).getDate();
+			const firstDayOffset = (firstOfMonth.getDay() - (isHr ? 1 : 0) + 7) % 7;
+			const monthLabelDate = new Date(state.viewYear, state.viewMonth, 1);
+
+			monthLabel.textContent = monthFormatter.format(monthLabelDate);
+
+			let markup = '';
+			for (let index = 0; index < firstDayOffset; index += 1) {
+				markup += '<button type="button" class="dtp-day dtp-day--muted" tabindex="-1" aria-hidden="true" disabled></button>';
 			}
 
-			if (state === 'valid') {
-				dateInput.classList.remove('field-missing');
-				timeInput.classList.remove('field-missing');
-				return true;
+			for (let day = 1; day <= daysInMonth; day += 1) {
+				const isSelected = hasDate() && state.selectedYear === state.viewYear && state.selectedMonth === state.viewMonth + 1 && state.selectedDay === day;
+				const dayDate = new Date(state.viewYear, state.viewMonth, day);
+				markup += `
+					<button type="button"
+						class="dtp-day ${isSelected ? 'dtp-day--selected' : ''}"
+						data-dtp-day="${day}"
+						aria-label="${dayFormatter.format(dayDate)}">
+						${day}
+					</button>`;
 			}
 
-			const dateStr = dateInput.value.trim();
-			const timeStr = timeInput.value.trim();
+			daysGrid.innerHTML = markup;
+		};
 
-			if (state === 'missing') {
-				dateInput.classList.add('field-missing');
-				timeInput.classList.add('field-missing');
-				shakeField(dateInput);
-			} else {
-				// invalid — mark only the offending part
-				if (!parseUserDate(dateStr) && dateStr) {
-					dateInput.classList.add('field-missing');
-					shakeField(dateInput);
-				}
+		const polarPosition = (angleDeg, radiusPercent) => {
+			const angleRad = (angleDeg * Math.PI) / 180;
+			return {
+				x: `${Math.cos(angleRad) * radiusPercent}%`,
+				y: `${Math.sin(angleRad) * radiusPercent}%`
+			};
+		};
 
-				if (!parseUserTime(timeStr) && timeStr) {
-					timeInput.classList.add('field-missing');
-					shakeField(timeInput);
-				}
+		const renderClock = (container, total, selectedValue, prefix, selectedClass, radius, displayLabel) => {
+			let markup = '';
+			for (let value = 0; value < total; value += 1) {
+				const angle = (value / total) * 360 - 90;
+				const isSelected = selectedValue === value;
+				const visualValue = prefix === 'hour' ? String(value === 0 ? 12 : value).padStart(2, ' ') : String(value).padStart(2, '0');
+				markup += `
+					<button type="button"
+						class="dtp-clock__item dtp-clock__item--${prefix} ${isSelected ? selectedClass : ''}"
+						style="--dtp-angle:${angle}deg; --dtp-radius:${radius};"
+						data-dtp-${prefix}="${value === 0 && prefix === 'hour' ? 12 : value}"
+						aria-label="${prefix === 'hour' ? `${value === 0 ? 12 : value} ${hoursLabel}` : `${value} ${minutesLabel}`}">
+						${prefix === 'hour' ? (value === 0 ? 12 : value) : ''}
+					</button>`;
 			}
 
-			return false;
+			container.innerHTML = markup;
+			displayLabel.textContent = selectedValue === null ? '--' : (prefix === 'hour' ? String(selectedValue).padStart(2, '0') : String(selectedValue).padStart(2, '0'));
+		};
+
+		const renderHours = () => {
+			let markup = '';
+			for (let hour = 1; hour <= 12; hour += 1) {
+				const angle = (hour / 12) * 360 - 90;
+				const isSelected = state.selectedHour === hour;
+				const isMajor = hour % 3 === 0;
+				const position = polarPosition(angle, 38);
+				markup += `
+					<button type="button"
+						class="dtp-clock__item dtp-clock__item--hour ${isMajor ? 'dtp-clock__item--major' : ''} ${isSelected ? 'dtp-clock__item--selected' : ''}"
+						style="--dtp-x:${position.x}; --dtp-y:${position.y};"
+						data-dtp-hour="${hour}"
+						aria-label="${hour} ${hoursLabel}">${hour}</button>`;
+			}
+
+			const hourHandAngle = state.selectedHour === null ? -90 : ((state.selectedHour % 12) / 12) * 360 - 90;
+			hourClock.innerHTML = `
+				<div class="dtp-clock__ring"></div>
+				<div class="dtp-clock__hand dtp-clock__hand--hour" style="--dtp-hand-angle:${hourHandAngle}deg"></div>
+				<div class="dtp-clock__center" data-dtp-hour-display>${state.selectedHour === null ? '--' : String(state.selectedHour).padStart(2, '0')}</div>
+				${markup}`;
+		};
+
+		const renderMinutes = () => {
+			let markup = '';
+			for (let minute = 0; minute < 60; minute += 1) {
+				const angle = (minute / 60) * 360 - 90;
+				const isSelected = state.selectedMinute === minute;
+				const isMajor = minute % 5 === 0;
+				const label = isMajor ? String(minute).padStart(2, '0') : '';
+				const position = polarPosition(angle, 43);
+				markup += `
+					<button type="button"
+						class="dtp-clock__item dtp-clock__item--minute ${isMajor ? 'dtp-clock__item--major' : 'dtp-clock__item--minor'} ${isSelected ? 'dtp-clock__item--selected' : ''}"
+						style="--dtp-x:${position.x}; --dtp-y:${position.y};"
+						data-dtp-minute="${minute}"
+						aria-label="${minute} ${minutesLabel}">${label}</button>`;
+			}
+
+			const minuteHandAngle = state.selectedMinute === null ? -90 : (state.selectedMinute / 60) * 360 - 90;
+			minuteClock.innerHTML = `
+				<div class="dtp-clock__ring"></div>
+				<div class="dtp-clock__hand dtp-clock__hand--minute" style="--dtp-hand-angle:${minuteHandAngle}deg"></div>
+				<div class="dtp-clock__center" data-dtp-minute-display>${state.selectedMinute === null ? '--' : String(state.selectedMinute).padStart(2, '0')}</div>
+				${markup}`;
+		};
+
+		const renderPeriodButtons = () => {
+			amButton.classList.toggle('dtp-period-toggle__btn--active', state.period === 'AM');
+			pmButton.classList.toggle('dtp-period-toggle__btn--active', state.period === 'PM');
+		};
+
+		const renderAll = () => {
+			renderWeekdays();
+			renderCalendar();
+			renderHours();
+			renderMinutes();
+			renderPeriodButtons();
+			renderSummary();
+		};
+
+		const openPanel = () => {
+			panel.hidden = false;
+			trigger.setAttribute('aria-expanded', 'true');
+			renderAll();
+		};
+
+		const closePanel = (validateNow = true) => {
+			panel.hidden = true;
+			trigger.setAttribute('aria-expanded', 'false');
+			if (validateNow) {
+				validate();
+			}
+		};
+
+		const setDate = (year, month, day) => {
+			state.selectedYear = year;
+			state.selectedMonth = month;
+			state.selectedDay = day;
+			state.viewYear = year;
+			state.viewMonth = month - 1;
+			renderAll();
+		};
+
+		const setHour = (hour) => {
+			state.selectedHour = hour;
+			if (state.period === null) {
+				state.period = 'AM';
+			}
+			renderAll();
+		};
+
+		const setMinute = (minute) => {
+			state.selectedMinute = minute;
+			renderAll();
+		};
+
+		const setPeriod = (period) => {
+			state.period = period;
+			renderAll();
 		};
 
 		const validate = () => {
-			const dateStr = dateInput.value.trim();
-			const timeStr = timeInput.value.trim();
-			const isEmpty = !dateStr && !timeStr;
+			const complete = hasCompleteSelection();
+			const anySelection = hasDate() || hasTime();
 
-			if (isEmpty) {
-				return isRequired
-					? setDtpState('missing', requiredMessage)
-					: setDtpState('valid', '');
+			if (!anySelection) {
+				if (isRequired) {
+					setValidationState(requiredMessage, 'invalid');
+					return false;
+				}
+
+				setValidationState('', 'valid');
+				return true;
 			}
 
-			if (!parseUserDate(dateStr)) {
-				return setDtpState('invalid', `Invalid date. Use ${isHr ? 'dd.MM.yyyy' : 'MM/dd/yyyy'}.`);
+			if (!complete) {
+				setValidationState(partialMessage, 'invalid');
+				return false;
 			}
 
-			if (timeStr && !parseUserTime(timeStr)) {
-				return setDtpState('invalid', 'Invalid time. Use HH:mm (e.g. 14:30).');
+			const dt = getSelectedDateTime();
+			if (!dt || Number.isNaN(dt.getTime())) {
+				setValidationState(invalidMessage, 'invalid');
+				return false;
 			}
 
-			return setDtpState('valid', '');
+			hidden.value = toISO(dt);
+			setValidationState('', 'valid');
+			return true;
 		};
 
-		// ── Pre-fill from existing ISO value (edit form) ─────────────────
-		const existingISO = hidden.value;
+		const existingISO = parseISO(hidden.value);
 		if (existingISO) {
-			const parsed = parseISO(existingISO);
-			if (parsed) {
-				dateInput.value = formatDateDisplay(parsed);
-				timeInput.value = formatTimeDisplay(parsed);
-			}
+			state.selectedYear = existingISO.getFullYear();
+			state.selectedMonth = existingISO.getMonth() + 1;
+			state.selectedDay = existingISO.getDate();
+			state.selectedHour = getHour12(existingISO.getHours());
+			state.selectedMinute = existingISO.getMinutes();
+			state.period = existingISO.getHours() >= 12 ? 'PM' : 'AM';
+			state.viewYear = existingISO.getFullYear();
+			state.viewMonth = existingISO.getMonth();
 		}
 
-		// ── Event listeners ──────────────────────────────────────────────
-		dateInput.addEventListener('input', () => {
-			updateHidden();
-			if (dateInput.value.trim()) {
-				dateInput.classList.remove('field-missing');
+		renderAll();
+
+		trigger.addEventListener('click', () => {
+			if (panel.hidden) {
+				openPanel();
+			} else {
+				closePanel(true);
 			}
 		});
 
-		timeInput.addEventListener('input', () => {
-			updateHidden();
-			if (timeInput.value.trim()) {
-				timeInput.classList.remove('field-missing');
+		trigger.addEventListener('keydown', (event) => {
+			if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+				event.preventDefault();
+				openPanel();
 			}
 		});
 
-		dateInput.addEventListener('blur', () => {
-			updateHidden();
-			validate();
+		root.addEventListener('focusout', (event) => {
+			if (!root.contains(event.relatedTarget)) {
+				validate();
+			}
 		});
 
-		timeInput.addEventListener('blur', () => {
-			updateHidden();
-			validate();
+		panel.addEventListener('click', (event) => {
+			const dayButton = event.target.closest('[data-dtp-day]');
+			if (dayButton) {
+				setDate(state.viewYear, state.viewMonth + 1, Number(dayButton.dataset.dtpDay));
+				return;
+			}
+
+			const hourButton = event.target.closest('[data-dtp-hour]');
+			if (hourButton) {
+				setHour(Number(hourButton.dataset.dtpHour));
+				return;
+			}
+
+			const minuteButton = event.target.closest('[data-dtp-minute]');
+			if (minuteButton) {
+				setMinute(Number(minuteButton.dataset.dtpMinute));
+				return;
+			}
 		});
 
-		// ── Register with form submit validator ──────────────────────────
+		prevButton.addEventListener('click', () => {
+			const result = clampMonth(state.viewYear, state.viewMonth - 1);
+			state.viewYear = result.year;
+			state.viewMonth = result.month;
+			renderCalendar();
+		});
+
+		nextButton.addEventListener('click', () => {
+			const result = clampMonth(state.viewYear, state.viewMonth + 1);
+			state.viewYear = result.year;
+			state.viewMonth = result.month;
+			renderCalendar();
+		});
+
+		amButton.addEventListener('click', () => setPeriod('AM'));
+		pmButton.addEventListener('click', () => setPeriod('PM'));
+
+		todayButton.addEventListener('click', () => {
+			const now = new Date();
+			state.selectedYear = now.getFullYear();
+			state.selectedMonth = now.getMonth() + 1;
+			state.selectedDay = now.getDate();
+			state.selectedHour = getHour12(now.getHours());
+			state.selectedMinute = now.getMinutes();
+			state.period = now.getHours() >= 12 ? 'PM' : 'AM';
+			state.viewYear = now.getFullYear();
+			state.viewMonth = now.getMonth();
+			renderAll();
+		});
+
+		clearButton.addEventListener('click', () => {
+			state.selectedYear = null;
+			state.selectedMonth = null;
+			state.selectedDay = null;
+			state.selectedHour = null;
+			state.selectedMinute = null;
+			state.period = 'AM';
+			hidden.value = '';
+			renderAll();
+			setValidationState('', 'valid');
+		});
+
+		closeButton.addEventListener('click', () => closePanel(true));
+
+		document.addEventListener('click', (event) => {
+			if (root.contains(event.target)) {
+				return;
+			}
+
+			if (!panel.hidden) {
+				closePanel(false);
+			}
+		});
+
 		const form = root.closest('form');
 		if (form) {
 			if (!form._dtpValidators) {
@@ -675,6 +898,15 @@ const applyServerSideValidationStyles = () => {
 		const field = form.querySelector(`[name="${fieldName}"]`);
 		if (field && field.type !== 'hidden') {
 			field.classList.add('field-missing');
+			return;
+		}
+
+		const dtpRoot = form.querySelector(`[data-dtp-hidden][name="${fieldName}"]`)?.closest('[data-dtp]');
+		if (dtpRoot) {
+			const trigger = dtpRoot.querySelector('[data-dtp-trigger]');
+			if (trigger) {
+				trigger.classList.add('field-missing');
+			}
 		}
 	});
 };
